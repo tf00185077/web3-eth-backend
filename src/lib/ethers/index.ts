@@ -18,7 +18,7 @@ export const createWallet = async (userId: string) => {
       data: {
         userId: userId,
         address: wallet.address,
-        phrase: wallet.mnemonic?.phrase!,
+        phrase: wallet.mnemonic!.phrase!,
       },
     });
     return true;
@@ -34,5 +34,6 @@ export const getWallets = async (userId: string) => {
       userId: userId,
     },
   });
+  wallets.sort((a, b) => a.created_at.getTime() - b.created_at.getTime());
   return wallets;
 };

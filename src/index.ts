@@ -3,6 +3,7 @@ import cors from 'cors';
 import { PrismaClient } from '@prisma/client';
 import dotenv from 'dotenv';
 import { createWallet, getWallets } from './lib/ethers';
+import { getTokenInformation } from './lib/binance';
 dotenv.config();
 
 const app = express();
@@ -42,6 +43,12 @@ app.get('/get-wallet-list/:userId', async (req: Request, res: Response) => {
   const { userId } = req.params;
   const wallets = await getWallets(userId);
   res.status(200).json({ wallets });
+});
+
+app.get('/get-token-information', async (req: Request, res: Response) => {
+  const { symbol } = req.query;
+  const tokens = await getTokenInformation(symbol as string);
+  res.status(200).json(tokens);
 });
 
 app.listen(PORT, () => {

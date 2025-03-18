@@ -2,7 +2,7 @@ import express, { Request, Response } from 'express';
 import cors from 'cors';
 import { PrismaClient } from '@prisma/client';
 import dotenv from 'dotenv';
-import { createWallet, getWallets } from './lib/ethers';
+import { createWallet, getWallets, getWalletErc20Information } from './lib/ethers';
 import { getTokenInformation } from './lib/binance';
 dotenv.config();
 
@@ -14,6 +14,8 @@ const PORT = process.env.PORT || 3001;
 app.use(cors({
   origin: process.env.FRONTEND_URL,
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 app.use(express.json());
 
@@ -49,6 +51,12 @@ app.get('/get-token-information', async (req: Request, res: Response) => {
   const { symbol } = req.query;
   const tokens = await getTokenInformation(symbol as string);
   res.status(200).json(tokens);
+});
+
+app.post('/get-wallet-erc20-information', async (req: Request, res: Response) => {
+  const { address } = req.body;
+  const walletInformation = await getWalletErc20Information(address as string);
+  res.status(200).json(walletInformation);
 });
 
 app.listen(PORT, () => {

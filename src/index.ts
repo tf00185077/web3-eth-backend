@@ -2,7 +2,7 @@ import express, { Request, Response } from 'express';
 import cors from 'cors';
 import { PrismaClient } from '@prisma/client';
 import dotenv from 'dotenv';
-import { createWallet, getWallets, getWalletErc20Information } from './lib/ethers';
+import { createWallet, getWallets, getWalletErc20Information, transferToken, getWallet } from './lib/ethers';
 import { getTokenInformation } from './lib/binance';
 dotenv.config();
 
@@ -57,6 +57,35 @@ app.post('/get-wallet-erc20-information', async (req: Request, res: Response) =>
   const { address } = req.body;
   const walletInformation = await getWalletErc20Information(address as string);
   res.status(200).json(walletInformation);
+});
+
+app.post('/transfer-token', async (req: Request, res: Response) => {
+  const { contract, recipient, amount, walletAddress, userId } = req.body;
+  try {
+    const walletPhrase = await prisma.wallet.findFirst({
+      where: {
+        address: walletAddress,
+        userId: userId,
+      },
+    });
+    if (!walletPhrase) {
+      res.status(400).json({ status: 'fail', message: 'Wallet not found' });
+      return;
+    }
+    const wallet = await getWallet(walletPhrase.phrase);
+    if (!wallet) {
+      res.status(400).json({ status: 'fail', message: 'Wallet not found' });
+      return;
+    }
+    const isSuccess = await transferToken(contract, recipient, amount, wallet);
+    if (isSuccess) {
+      res.status(200).json({ status: 'success', message: 'Transfer successful' });
+    } else {
+      res.status(400).json({ status: 'fail', message: 'Transfer failed' });
+    }
+  } catch (error) {
+    res.status(400).json({ status: 'fail', message: 'Transfer failed' });
+  }
 });
 
 app.listen(PORT, () => {

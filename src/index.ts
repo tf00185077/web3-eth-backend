@@ -2,7 +2,7 @@ import express, { Request, Response } from 'express';
 import cors from 'cors';
 import { PrismaClient } from '@prisma/client';
 import dotenv from 'dotenv';
-import { createWallet, getWallets, getWalletErc20Information, transferToken, getWallet } from './lib/ethers';
+import { createWallet, getWallets, getWalletErc20Information, transferToken, getWallet, getWalletTradeHistory } from './lib/ethers';
 import { getTokenInformation } from './lib/binance';
 dotenv.config();
 
@@ -85,6 +85,20 @@ app.post('/transfer-token', async (req: Request, res: Response) => {
     }
   } catch (error) {
     res.status(400).json({ status: 'fail', message: 'Transfer failed' });
+  }
+});
+
+app.get('/get-wallet-trade-history/:address', async (req: Request, res: Response) => {
+  const { address } = req.params;
+  try { 
+    const tradeHistory = await getWalletTradeHistory(address);
+    if (tradeHistory.status === 'success') {
+      res.status(200).json({ status: 'success', data: tradeHistory.data });
+    } else {
+      res.status(400).json({ status: 'fail', message: 'Get trade history failed' });
+    }
+  } catch (error) {
+    res.status(400).json({ status: 'fail', message: 'Get trade history failed' });
   }
 });
 

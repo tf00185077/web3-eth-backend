@@ -103,3 +103,23 @@ export const transferToken = async (contract: string, recipient: string, amount:
   }
   console.log('end transfer');
 };
+
+export const getWalletTradeHistory = async (address: string) => {
+  const url = `https://api.etherscan.io/api?module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&sort=desc&apikey=${process.env.ETHERSCAN_API_KEY}`;
+  try {
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (data.status === "1") {
+      console.log("Transaction History:", data.result);
+      return { status: "success", data: data.result };
+    } else {
+      console.error("Error fetching transaction history:", data.message);
+      return { status: "fail", data: [] };
+    }
+  } catch (error) {
+    console.error("Fetch failed:", error);
+    return { status: "fail", data: [] };
+  }
+};
+
